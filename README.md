@@ -1,4 +1,5 @@
 ![Blue Black Neon Sci Fi Twitch Banner](https://github.com/Jhuomar-Barria/Code-Forge/assets/124087234/9715a1c3-72c1-4a89-be98-95454de54fd5)
+
 ## I'm Jhuomar Barria 
 
 <table>
@@ -50,12 +51,69 @@
     <div align="center">
       <h2><b>About this repository</b></h2>
       <br>
-      <p align="left"> Welcome to my GitHub repository! Here, you'll find a treasure trove of code waiting to be explored.</p> 
-      <p align="left">Whether you're delving into C, C++, Python, HTML, CSS, or JavaScript, there's something here for you.</p>  
-      <p align="left">Dive in, explore, and unleash your creativity with my projects. Happy coding!</p> 
+      <p align="left"> Welcome to my professional portfolio repository! This collection showcases my projects, programming challenges, and technical skills across multiple technologies.</p> 
+      <p align="left">Here you'll find a diverse range of applications, from desktop GUI applications to AI-powered chatbots, demonstrating my expertise in Python, C++, Java, and various frameworks.</p>  
+      <p align="left">Each project includes detailed documentation, code examples, and demonstrates best practices in software development.</p> 
    </td>
   </tr>
 </table>
+
+------
+
+## 🚀 Featured Projects
+
+### [ChallengesDev](ChallengesDev/)
+A comprehensive collection of programming challenges and solutions across multiple languages. This repository serves as both a learning resource and a demonstration of problem-solving skills in C++, Python, and Java.
+
+**Key Features:**
+- Challenges across multiple difficulty levels
+- Solutions in C++, Python, and Java
+- Comprehensive problem descriptions and examples
+- Best practices and recommendations
+
+### [WhatsappBot](WhatsappBot/)
+An intelligent WhatsApp chatbot powered by OpenAI's GPT-3.5-turbo API, designed for automated customer service with multilingual support.
+
+**Key Features:**
+- AI-powered natural language processing
+- Multilingual conversation support
+- Emotion detection and request classification
+- Professional customer service capabilities
+
+### [Veronica](Veronica/)
+A project showcasing advanced development skills and innovative solutions with modern architecture and design patterns.
+
+**Key Features:**
+- Modern architecture and design patterns
+- Clean code principles
+- Scalable and maintainable solutions
+
+### [TheoreticalResearch](TheoreticalResearch/)
+A collection of theoretical research, academic papers, algorithms analysis, and computational theory explorations.
+
+**Key Features:**
+- Algorithm analysis and complexity studies
+- Computational theory research
+- Mathematical proofs and derivations
+- Academic documentation and research papers
+
+------
+
+## 📊 Repository Statistics
+
+- **Languages**: Python, C++, Java, JavaScript, HTML, CSS
+- **Technologies**: Tkinter, SQLite, OpenAI API, Git
+- **Project Types**: Desktop Applications, AI/ML, Web Development, Algorithms
+
+## 📧 Contact
+
+- **Email**: [jhuomar3105@gmail.com](mailto:jhuomar3105@gmail.com)
+- **LinkedIn**: [Jhuomar Barría](https://www.linkedin.com/in/jhuomar-barría/)
+- **Phone**: +507 6958-2026
+
+## 📝 License
+
+This repository is part of my professional portfolio and is available for educational and demonstration purposes.
 
 ------
 
