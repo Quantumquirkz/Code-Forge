@@ -1,0 +1,84 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environment
+venv/
+env/
+ENV/
+.venv
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb_checkpoints/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Datos (grandes archivos)
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+
+# Gráficos generados
+plots/*.png
+plots/*.svg
+plots/*.pdf
+!plots/.gitkeep
+
+# Informes compilados
+reports/*.pdf
+reports/*.aux
+reports/*.log
+reports/*.out
+reports/*.toc
+reports/*.bbl
+reports/*.blg
+reports/*.fdb_latexmk
+reports/*.fls
+reports/*.synctex.gz
+
+# Mantener estructura pero no contenido
+!reports/.gitkeep
+
+# Archivos temporales
+*.tmp
+*.bak
+*.swp
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Configuración local
+.env
+config_local.py
+

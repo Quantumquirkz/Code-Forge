@@ -79,15 +79,33 @@ pdflatex cryptographic_evaluation_model.tex
 
 Or use a LaTeX editor like Overleaf, TeXstudio, or VS Code with LaTeX Workshop extension.
 
+### Análisis Climático: Don Bosco, Villas de Andalucía
+
+**Directorio**: `clima_don_bosco_andalucia/`
+
+Análisis exhaustivo del comportamiento climático en Don Bosco, Villas de Andalucía, Ciudad de Panamá, para el período 2000-2025. El proyecto incluye:
+
+- Recopilación y procesamiento de datos climáticos históricos
+- Análisis estadístico de tendencias y anomalías
+- Correlación con fenómenos climáticos globales (ENSO)
+- Visualización de datos con gráficos de alta calidad
+- Detección de períodos de sequía y eventos extremos
+
 ## 📖 Structure
 
 ```
 TheoreticalResearch/
-├── cryptographic_evaluation_model.tex  # Main research paper
-├── Algorithms/                          # Algorithm analysis and complexity studies
-├── Papers/                             # Research papers and academic documents
-├── Proofs/                             # Mathematical proofs and derivations
-└── README.md                           # This file
+├── cryptographic_evaluation_model.tex    # Main research paper (cryptography)
+├── advanced_tokenization_zkp_model.tex   # Advanced ZKP tokenization model
+├── clima_don_bosco_andalucia/            # Análisis climático Don Bosco
+│   ├── config.py                         # Configuración
+│   ├── clima_data.py                     # Procesamiento de datos
+│   ├── visualizacion.py                  # Visualización
+│   ├── main.py                           # Script principal
+│   ├── data/                             # Datos procesados
+│   ├── plots/                            # Gráficos generados
+│   └── notebooks/                        # Análisis interactivo
+└── README.md                             # This file
 ```
 
 ## 🎯 Purpose
