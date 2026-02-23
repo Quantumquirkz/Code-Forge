@@ -34,3 +34,5 @@ CONTEXT_MEMORY_SIZE = settings.context_memory_size
 RATE_LIMIT_ENABLED = settings.rate_limit_enabled
 RATE_LIMIT_MESSAGES = settings.rate_limit_messages
 RATE_LIMIT_WINDOW = settings.rate_limit_window
+
+VERIFY_TWILIO_SIGNATURE = settings.verify_twilio_signature

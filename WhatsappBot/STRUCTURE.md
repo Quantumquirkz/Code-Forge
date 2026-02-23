@@ -107,6 +107,7 @@ WhatsappBot/
 - ✅ Caso de uso `process_incoming_message.py` implementado.
 - ✅ Pruebas iniciales agregadas en `tests/unit` y `tests/integration`.
 - ✅ Adapters de mensajería iniciales (`twilio_adapter`, `meta_adapter`) implementados.
+- ✅ Controles operativos base: rate limiting en webhook y validación opcional de firma Twilio.
 - ⏳ Pendiente: ampliar cobertura de tests para flujos de error y proveedores reales.
 
 ---

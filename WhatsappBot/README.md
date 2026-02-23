@@ -151,6 +151,7 @@ Opcionales para Twilio:
 - `TWILIO_ACCOUNT_SID`
 - `TWILIO_AUTH_TOKEN`
 - `TWILIO_WHATSAPP_NUMBER`
+- `VERIFY_TWILIO_SIGNATURE` (default: `false`)
 
 ---
 
@@ -170,7 +171,9 @@ Opcionales para Twilio:
 - No subir `.env` al repositorio.
 - Usar HTTPS en webhooks en producción.
 - Agregar validación de firma del proveedor (Twilio/Meta).
-- Implementar rate limiting y trazabilidad por request ID.
+- Rate limiting por remitente activo (respuesta HTTP `429` al exceder límite).
+- Validación opcional de firma de Twilio (respuesta HTTP `403` cuando es inválida).
+- Implementar trazabilidad por request ID.
 
 ---
 

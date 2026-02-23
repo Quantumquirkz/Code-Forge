@@ -35,6 +35,8 @@ class Settings:
     rate_limit_messages: int = int(os.getenv("RATE_LIMIT_MESSAGES", "20"))
     rate_limit_window: int = int(os.getenv("RATE_LIMIT_WINDOW", "60"))
 
+    verify_twilio_signature: bool = os.getenv("VERIFY_TWILIO_SIGNATURE", "false").lower() == "true"
+
     twilio_account_sid: str = os.getenv("TWILIO_ACCOUNT_SID", "")
     twilio_auth_token: str = os.getenv("TWILIO_AUTH_TOKEN", "")
     twilio_whatsapp_number: str = os.getenv("TWILIO_WHATSAPP_NUMBER", "")
