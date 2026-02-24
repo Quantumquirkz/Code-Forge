@@ -1,58 +1,96 @@
+from __future__ import annotations
+
+from dataclasses import dataclass
+from typing import AsyncIterator
+
 from langchain.agents import AgentExecutor, create_openai_functions_agent
+from langchain_core.messages import BaseMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+
 from app.core.config import settings
-from app.memory.manager import memory_manager
 from app.core.llm_factory import LLMFactory
+from app.memory.manager import memory_manager
+
+
+@dataclass(slots=True)
+class ContextEnricher:
+    """Build enriched model input using memory retrieval context."""
+
+    def build(self, user_input: str) -> str:
+        context = memory_manager.search_memories(user_input)
+        context_str = "\n".join(context)
+        return f"Context from your memory:\n{context_str}\n\nUser Question: {user_input}"
+
+
+@dataclass(slots=True)
+class MemoryRecorder:
+    """Persist finalized conversation turns in long-term memory."""
+
+    def record(self, user_input: str, output_text: str) -> None:
+        memory_manager.add_memory(f"User: {user_input}\nVeronica: {output_text}")
+
 
 class AgentOrchestrator:
-    def __init__(self, provider: str = "openai", model: str = "gpt-4o"):
+    """Coordinates LLM, tools, and memory for Veronica chat interactions."""
+
+    def __init__(self, provider: str = "openai", model: str = "gpt-4o") -> None:
         self.llm = LLMFactory.get_llm(provider=provider, model=model, streaming=True)
-        self.tools = [] # To be populated by tools module
-        
-        prompt = ChatPromptTemplate.from_messages([
-            ("system", settings.VERONICA_PERSONA),
-            MessagesPlaceholder(variable_name="chat_history"),
-            ("human", "{input}"),
-            MessagesPlaceholder(variable_name="agent_scratchpad"),
-        ])
-        
-        self.agent = create_openai_functions_agent(self.llm, self.tools, prompt)
+        self.tools = []
+        self.context_enricher = ContextEnricher()
+        self.memory_recorder = MemoryRecorder()
+        self._prompt = ChatPromptTemplate.from_messages(
+            [
+                ("system", settings.VERONICA_PERSONA),
+                MessagesPlaceholder(variable_name="chat_history"),
+                ("human", "{input}"),
+                MessagesPlaceholder(variable_name="agent_scratchpad"),
+            ]
+        )
+        self._build_executor()
+
+    def _build_executor(self) -> None:
+        """Rebuild the agent/executor pair to reflect current tool registrations."""
+        self.agent = create_openai_functions_agent(self.llm, self.tools, self._prompt)
         self.executor = AgentExecutor(agent=self.agent, tools=self.tools, verbose=True)
 
-    def run(self, user_input: str, history: list = []):
-        # Synchronous run (still used for some endpoints)
-        context = memory_manager.search_memories(user_input)
-        context_str = "\n".join(context)
-        enhanced_input = f"Context from your memory:\n{context_str}\n\nUser Question: {user_input}"
-        
-        response = self.executor.invoke({
-            "input": enhanced_input,
-            "chat_history": history
-        })
-        
-        memory_manager.add_memory(f"User: {user_input}\nVeronica: {response['output']}")
-        return response["output"]
+    def configure_tools(self, tools: list) -> None:
+        """Set available tools and rebuild internals so bindings stay consistent."""
+        self.tools = tools
+        self._build_executor()
 
-    async def astream_responses(self, user_input: str, history: list = []):
-        # Asynchronous streaming
-        context = memory_manager.search_memories(user_input)
-        context_str = "\n".join(context)
-        enhanced_input = f"Context from your memory:\n{context_str}\n\nUser Question: {user_input}"
-        
+    def run(self, user_input: str, history: list[BaseMessage] | None = None) -> str:
+        """Synchronous run used by non-streaming endpoints."""
+        enhanced_input = self.context_enricher.build(user_input)
+        response = self.executor.invoke(
+            {
+                "input": enhanced_input,
+                "chat_history": history or [],
+            }
+        )
+
+        output_text = response["output"]
+        self.memory_recorder.record(user_input, output_text)
+        return output_text
+
+    async def astream_responses(
+        self, user_input: str, history: list[BaseMessage] | None = None
+    ) -> AsyncIterator[str]:
+        """Asynchronous response streaming for websocket chat."""
+        enhanced_input = self.context_enricher.build(user_input)
+
         full_response = ""
-        async for chunk in self.executor.astream({
-            "input": enhanced_input,
-            "chat_history": history
-        }):
-            # AgentExecutor streaming yields events
+        async for chunk in self.executor.astream(
+            {
+                "input": enhanced_input,
+                "chat_history": history or [],
+            }
+        ):
             if "output" in chunk:
                 full_response += chunk["output"]
                 yield chunk["output"]
-            elif "actions" in chunk:
-                # You could yield tool calling info here if desired
-                pass
-        
+
         if full_response:
-            memory_manager.add_memory(f"User: {user_input}\nVeronica: {full_response}")
+            self.memory_recorder.record(user_input, full_response)
+
 
 agent_orchestrator = AgentOrchestrator()

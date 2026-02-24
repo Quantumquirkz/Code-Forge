@@ -1,70 +1,107 @@
-# Veronica - Project Roadmap & Status
+# Veronica Implementation Roadmap (Execution-Oriented)
 
-This document tracks the development progress and future roadmap of Veronica.
+This roadmap translates strategy into an implementation sequence suitable for a professional software lifecycle.
 
-## 1. Project Configuration & Environment
-The initial setup of the project involved creating a well-organized directory structure and essential base files to ensure a solid foundation. A virtual environment was established to manage dependencies efficiently, with all required packages listed in the `requirements.txt` file. An `.env.example` file was created to outline the key environment variables necessary for the project's configuration. Docker Compose was implemented to facilitate the deployment of auxiliary services such as ChromaDB, ensuring that these services can be easily managed and scaled. The main script (`main.py`) was developed using FastAPI to provide a robust starting point for the application.
-- [x] Base structure and FastAPI setup.
-- [x] Dockerization and environment config.
+---
 
-## 2. Real-time Communication (WebSockets)
-The implementation of WebSocket endpoints enables seamless real-time communication for text messages. This includes handling connection and disconnection events as well as managing message flow effectively. The integration with the main agent ensures that messages are processed and responses are delivered in real-time, providing a responsive and interactive user experience.
-- [x] WebSocket integration for text.
+## 1) Delivery Strategy
 
-## 3. LLM Integration (Multiple Providers)
-The project currently supports configuration for multiple language model providers, including OpenAI and Anthropic. An abstract class for LLM providers is planned to enhance flexibility and maintainability. API key configuration and model selection are already in place, with basic error handling and retries implemented to ensure reliability. Response streaming is currently implemented as full-message delivery, with plans to enhance this feature for more efficient data transmission.
-- [x] OpenAI & Anthropic support.
-- [x] Abstract provider class (Refactoring).
-- [x] Response streaming.
+```mermaid
+gantt
+  title Veronica Roadmap (High-Level)
+  dateFormat  YYYY-MM-DD
+  section Foundation
+  Phase 1 hardening           :done, p1, 2026-02-01, 30d
+  section Productization
+  Security & auth baseline    :active, p2, 2026-03-01, 21d
+  Real integrations v1        :p3, after p2, 35d
+  section Scale
+  Observability & reliability :p4, after p3, 28d
+  Agent autonomy v1           :p5, after p4, 35d
+```
 
-## 4. Autonomous Agent with LangChain
-An autonomous agent has been created using LangChain, equipped with essential tools such as lights control and email simulation. The agent's personality is defined through a sophisticated prompt system, and conversation handling with memory ensures context-aware interactions. The base structure for integration with the main agent exists, with further enhancements planned for specialized agent definitions and task creation.
-- [x] Agent logic and core tools.
-- [x] Personality prompting.
+---
 
-## 5. Orchestration with CrewAI (Multi-agent Tasks)
-The project includes a base structure for integrating CrewAI to manage multi-agent tasks. This involves defining specialized agents such as a Personal Assistant and a House Controller. Task and process creation are key components of this section, with the aim of achieving seamless orchestration among multiple agents to perform complex tasks efficiently.
-- [ ] CrewAI multi-agent workflows.
+## 2) Current Status (as of latest review)
 
-## 6. Long-term Memory with Vector DB
-ChromaDB has been configured to provide long-term memory capabilities, with functions to save and retrieve conversations. Text embeddings using OpenAI defaults enable efficient storage and retrieval of information. Semantic search functionality allows the system to retrieve relevant context based on user queries, enhancing the overall interaction experience.
-- [x] ChromaDB integration and semantic search.
+## Completed
+- [x] WebSocket chat endpoint with streaming responses.
+- [x] Typed chat and voice API payload models.
+- [x] Session-level in-memory state with pending-action support.
+- [x] Confirmation gate (`confirm/cancel`) for sensitive actions.
+- [x] Action audit trail (JSONL).
+- [x] Blockchain balance read + transfer simulation primitives.
+- [x] Baseline backend test suite for policy/session/protocol modules.
+- [x] Phase 1 ADR and modular protocol/middleware foundation.
 
-## 7. Voice Module: Speech-to-Text (Whisper)
-A dedicated endpoint/function has been developed to process audio inputs, utilizing OpenAI Whisper for accurate speech-to-text transcription. The system is capable of handling various audio formats and integrating the transcribed text into the message flow, ensuring smooth communication between the user and the system.
-- [x] Whisper integration.
+## In progress
+- [ ] Full production hardening of auth, tenancy, and reliability controls.
 
-## 8. Voice Module: Text-to-Speech (ElevenLabs)
-The text-to-speech module uses ElevenLabs to generate audio from text, with the Rachel voice configured for optimal stability and clarity. Audio can be delivered via WebSocket or API response, providing flexibility in how the user receives feedback. Plans include implementing an audio cache for common responses to improve performance and reduce latency.
-- [x] ElevenLabs integration.
-- [ ] Audio response caching.
+## Not started
+- [ ] Real connectors (calendar/email/home automation APIs).
+- [ ] Secure signer abstraction for blockchain write actions.
+- [ ] Deployment-grade observability and SLO-based operations.
 
-## 9. Vision Module (GPT-4o Vision)
-The vision module includes an endpoint to receive images, which are then processed and sent to the vision model for analysis. The system can provide contextual responses based on visual inputs, with use cases including scene description and text reading. This module enhances the system's ability to interact with the user in a multimodal manner.
-- [x] GPT-4o Vision integration.
+---
 
-## 10. Modular Tool System
-A standard interface for tools has been established using the `@tool` decorator, allowing for dynamic tool registration and easy integration of new functionalities. Example tools such as email handling and home assistant simulations have been implemented. Future plans include adding OAuth and authentication handling for real APIs, ensuring secure and efficient tool usage.
-- [x] `@tool` based modular system.
-- [ ] OAuth integration.
+## 3) Prioritized Backlog
 
-## 11. Personality & Prompt Engineering
-The system prompt for Veronica has been carefully crafted to define her personality, with instructions for empathy, proactivity, and politeness. Temperature and parameter tuning in the orchestrator ensure that the agent's responses are appropriate and contextually relevant, providing a more engaging and personalized user experience.
-- [x] Empathetic prompt design.
+## P0 — Must Have (production gate)
+1. Authentication + authorization for HTTP and WebSocket routes.
+2. Per-user tenancy boundaries for memory, session, and audit data.
+3. Rate limiting and abuse controls.
+4. Secret management and environment hardening.
+5. Error taxonomy + centralized structured logging pipeline.
 
-## 12. Next.js User Interface (Frontend - Phase 3)
-A premium, modern chat interface has been developed using **Next.js 14** and **Vanilla CSS**. The design features glassmorphism, dark mode by default, and smooth micro-animations. It communicates with the backend via a custom WebSocket hook that supports real-time token streaming.
-- [x] Next.js project structure manually initialized.
-- [x] Glassmorphism Chat UI with Vanilla CSS modules.
-- [x] `useWebSocket` hook with real-time streaming support.
-- [x] Modern typography and responsive layout.
+## P1 — High Value
+1. Real email/calendar/home integrations with OAuth2.
+2. UI support for confirmation cards and action previews.
+3. Background workers for media and tool tasks.
+4. Observability stack (metrics, tracing, dashboards, alerting).
 
-## 13. Unit & Integration Tests
-Basic test scripts (`test_veronica.py`) have been created to ensure the reliability and functionality of the system. Mocks for external services, such as ElevenLabs key checks, are in place to facilitate testing without dependencies on external APIs. Plans include developing a comprehensive test suite using `pytest` to cover all aspects of the project thoroughly.
-- [x] Basic test script.
-- [ ] Pytest suite.
+## P2 — Strategic
+1. Persona tuning controls and user preference center.
+2. Multi-chain blockchain adapters and signer policy engine.
+3. Proactive routines and autonomous task planner.
 
-## 14. Deployment & Documentation
-Detailed installation instructions are provided in the `README`, along with an API configuration guide and usage examples to assist users in setting up and using the system. Dockerization is ready with Docker Compose, making it easy to deploy the application in various environments. Comprehensive documentation ensures that users can quickly get started and make the most of Veronica's capabilities.
-- [x] Detailed README.
-- [x] Docker Compose deployment.
+---
+
+## 4) Phase-1 Detailed Checklist
+
+## 4.1 Architecture and boundaries
+- [x] Define ADR for Phase 1 hardening.
+- [x] Introduce domain models (`ConversationContext`, `UserProfile`).
+- [x] Separate websocket protocol handling from transport layer.
+- [x] Add centralized middleware for request IDs and fallback 500 handling.
+
+## 4.2 Quality gates
+- [x] Add baseline unit tests for protocol handler.
+- [x] Add baseline unit tests for middleware.
+- [x] Add baseline tests for domain model validation.
+- [x] Add repository guard test for unresolved merge markers.
+
+## 4.3 Remaining gaps to close Phase 1 completely
+- [ ] Introduce API auth dependency and security tests.
+- [ ] Add contract tests for websocket events (`chunk/end/error/requires_confirmation`).
+- [ ] Add lint/type-check pipelines in CI.
+
+---
+
+## 5) Definition of Done (DoD)
+
+A milestone is complete only when:
+1. Functional requirements are implemented.
+2. Unit/integration tests pass in CI.
+3. Security checks and static checks pass.
+4. Documentation and ADRs are updated.
+5. Operational runbook entries are present for any new subsystem.
+
+---
+
+## 6) Risk Register (Top Items)
+
+1. **Security risk:** no auth/authz in current API surface.
+2. **Operational risk:** local JSONL audit logging is not centralized/immutable.
+3. **Scalability risk:** process-local session store is not shared across instances.
+4. **Product risk:** tool integrations remain mostly simulated.
+5. **Compliance risk:** voice/image data flows need explicit privacy controls.
