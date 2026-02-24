@@ -5,6 +5,8 @@ from __future__ import annotations
 import time
 from collections import defaultdict, deque
 
+from whatsapp_bot.shared.exceptions import RateLimitExceeded
+
 
 class InMemoryRateLimiter:
     """Simple sliding-window limiter by key."""
@@ -15,7 +17,11 @@ class InMemoryRateLimiter:
         self._events: dict[str, deque[float]] = defaultdict(deque)
 
     def allow(self, key: str) -> bool:
-        """Return True if request is allowed for the given key."""
+        """Return True if request is allowed for the given key.
+        
+        Raises:
+            RateLimitExceeded: If key has exceeded the rate limit.
+        """
         now = time.time()
         queue = self._events[key]
         cutoff = now - self.window_seconds
@@ -24,7 +30,9 @@ class InMemoryRateLimiter:
             queue.popleft()
 
         if len(queue) >= self.max_requests:
-            return False
+            raise RateLimitExceeded(
+                f"Rate limit exceeded: {self.max_requests} requests per {self.window_seconds}s"
+            )
 
         queue.append(now)
         return True

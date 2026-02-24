@@ -13,7 +13,16 @@ from whatsapp_bot.infrastructure.security.request_verifier import TwilioRequestV
 from whatsapp_bot.infrastructure.storage.in_memory_rate_limiter import InMemoryRateLimiter
 from whatsapp_bot.integrations.messaging.meta_adapter import MetaAdapter
 from whatsapp_bot.integrations.messaging.twilio_adapter import TwilioAdapter
-from whatsapp_bot.shared.exceptions import ValidationError
+from whatsapp_bot.shared.exceptions import (
+    InvalidMessageFormat,
+    LLMAuthenticationError,
+    LLMModelError,
+    LLMRateLimitError,
+    LLMServerError,
+    LLMTimeoutError,
+    RateLimitExceeded,
+    ValidationError,
+)
 from whatsapp_bot.use_cases.process_incoming_message import ProcessIncomingMessage
 
 logger = logging.getLogger(__name__)
@@ -46,17 +55,28 @@ def build_api_blueprint(
 
             is_twilio_form = bool(form_data.get("From"))
             adapter = TwilioAdapter if is_twilio_form else MetaAdapter
-            sender, incoming_message = adapter.normalize_incoming_payload(payload, form_data)
+            try:
+                sender, incoming_message = adapter.normalize_incoming_payload(payload, form_data)
+            except (ValueError, KeyError) as exc:
+                logger.warning("Invalid message format: %s", exc)
+                raise InvalidMessageFormat(
+                    f"Invalid message format: {exc}"
+                ) from exc
 
             incoming_dto = build_incoming_dto(sender=sender, message=incoming_message)
 
             if is_twilio_form and verifier is not None:
                 signature = request.headers.get("X-Twilio-Signature")
                 if not verifier.is_valid(request.url, form_data, signature):
+                    logger.warning("Invalid Twilio signature from %s", sender)
                     return jsonify({"status": "error", "message": "Invalid Twilio signature"}), 403
 
-            if limiter is not None and not limiter.allow(incoming_dto.sender):
-                return jsonify({"status": "error", "message": "Rate limit exceeded"}), 429
+            if limiter is not None:
+                try:
+                    limiter.allow(incoming_dto.sender)
+                except RateLimitExceeded:
+                    logger.warning("Rate limit exceeded for user %s", sender)
+                    return jsonify({"status": "error", "message": "Rate limit exceeded"}), 429
 
             response_text = process_message_uc.execute(
                 user_id=incoming_dto.sender,
@@ -69,11 +89,49 @@ def build_api_blueprint(
                 return str(resp)
 
             return jsonify({"status": "success", "response": response_text})
+
+        except InvalidMessageFormat as exc:
+            logger.warning("Invalid message format: %s", exc)
+            return jsonify({"status": "error", "message": "Invalid message format"}), 400
+
         except ValidationError as exc:
+            logger.warning("Validation error: %s", exc)
             return jsonify({"status": "error", "message": str(exc)}), 400
+
+        except LLMAuthenticationError as exc:
+            logger.error("LLM authentication failed: %s", exc)
+            return jsonify({
+                "status": "error",
+                "message": "AI service authentication failed. Please contact support."
+            }), 503
+
+        except LLMRateLimitError as exc:
+            logger.warning("LLM rate limit exceeded: %s", exc)
+            return jsonify({
+                "status": "error",
+                "message": "AI service is busy. Please try again later."
+            }), 429
+
+        except (LLMTimeoutError, LLMServerError) as exc:
+            logger.error("LLM service error: %s", exc)
+            return jsonify({
+                "status": "error",
+                "message": "AI service is temporarily unavailable. Please try again."
+            }), 503
+
+        except LLMModelError as exc:
+            logger.error("LLM model error: %s", exc)
+            return jsonify({
+                "status": "error",
+                "message": "AI model configuration error. Please contact support."
+            }), 500
+
         except Exception as exc:  # noqa: BLE001
-            logger.exception("Error in webhook: %s", exc)
-            return jsonify({"status": "error", "message": str(exc)}), 500
+            logger.exception("Unexpected error in webhook: %s", exc)
+            return jsonify({
+                "status": "error",
+                "message": "An unexpected error occurred. Please try again."
+            }), 500
 
     @bp.route("/health", methods=["GET"])
     def health_check():

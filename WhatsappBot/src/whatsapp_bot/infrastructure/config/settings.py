@@ -1,47 +1,196 @@
-"""Runtime settings for WhatsAppBot."""
+"""Runtime settings for WhatsAppBot with environment-based configuration."""
 
 from __future__ import annotations
 
 import os
-from dataclasses import dataclass
+from typing import Optional
 
-from dotenv import load_dotenv
+from pydantic import Field, validator
+from pydantic_settings import BaseSettings
 
-load_dotenv()
-
-
-@dataclass(frozen=True)
-class Settings:
-    """Centralized application settings loaded from environment variables."""
-
-    groq_api_key: str = os.getenv("GROQ_API_KEY", "")
-    groq_model: str = os.getenv("GROQ_MODEL", "llama-3.1-70b-versatile")
-    groq_max_tokens: int = int(os.getenv("GROQ_MAX_TOKENS", "500"))
-    groq_temperature: float = float(os.getenv("GROQ_TEMPERATURE", "0.7"))
-
-    whatsapp_session_path: str = os.getenv("WHATSAPP_SESSION_PATH", "./sessions")
-    whatsapp_qr_path: str = os.getenv("WHATSAPP_QR_PATH", "./qr_code.png")
-
-    bot_name: str = os.getenv("BOT_NAME", "Asistente Virtual")
-    bot_language: str = os.getenv("BOT_LANGUAGE", "es")
-    enable_logging: bool = os.getenv("ENABLE_LOGGING", "true").lower() == "true"
-    log_file: str = os.getenv("LOG_FILE", "./logs/bot.log")
-
-    max_response_length: int = int(os.getenv("MAX_RESPONSE_LENGTH", "1000"))
-    enable_context: bool = os.getenv("ENABLE_CONTEXT", "true").lower() == "true"
-    context_memory_size: int = int(os.getenv("CONTEXT_MEMORY_SIZE", "10"))
-
-    rate_limit_enabled: bool = os.getenv("RATE_LIMIT_ENABLED", "true").lower() == "true"
-    rate_limit_messages: int = int(os.getenv("RATE_LIMIT_MESSAGES", "20"))
-    rate_limit_window: int = int(os.getenv("RATE_LIMIT_WINDOW", "60"))
-
-    verify_twilio_signature: bool = os.getenv("VERIFY_TWILIO_SIGNATURE", "false").lower() == "true"
-
-    twilio_account_sid: str = os.getenv("TWILIO_ACCOUNT_SID", "")
-    twilio_auth_token: str = os.getenv("TWILIO_AUTH_TOKEN", "")
-    twilio_whatsapp_number: str = os.getenv("TWILIO_WHATSAPP_NUMBER", "")
-
-    port: int = int(os.getenv("PORT", "5000"))
+from .environments import Environment, EnvironmentConfig
 
 
+class Settings(BaseSettings):
+    """
+    Centralized application settings loaded from environment variables.
+    Supports development, staging, and production profiles.
+    """
+
+    # Environment
+    environment: Environment = Field(
+        default=Environment.DEVELOPMENT,
+        description="Execution environment (development, staging, production)"
+    )
+
+    # AI/LLM Configuration
+    groq_api_key: str = Field(
+        default="",
+        description="Groq API key for LLM access"
+    )
+    groq_model: str = Field(
+        default="llama-3.1-70b-versatile",
+        description="Groq model identifier"
+    )
+    groq_max_tokens: int = Field(
+        default=500,
+        ge=1,
+        le=4000,
+        description="Maximum tokens for LLM responses"
+    )
+    groq_temperature: float = Field(
+        default=0.7,
+        ge=0.0,
+        le=2.0,
+        description="Temperature parameter for LLM"
+    )
+
+    # WhatsApp Configuration
+    # NOTE: These are reserved for future features (WhatsApp Web integration)
+    whatsapp_session_path: str = Field(
+        default="./sessions",
+        description="[FUTURE] Path to store WhatsApp session data"
+    )
+    whatsapp_qr_path: str = Field(
+        default="./qr_code.png",
+        description="[FUTURE] Path to store QR code for authentication"
+    )
+
+    # Bot Configuration
+    bot_name: str = Field(
+        default="Asistente Virtual",
+        description="Bot display name"
+    )
+    bot_language: str = Field(
+        default="es",
+        description="Default bot language (es, en, pt)"
+    )
+
+    # Logging Configuration
+    enable_logging: bool = Field(
+        default=True,
+        description="Enable application logging"
+    )
+    log_file: str = Field(
+        default="./logs/bot.log",
+        description="Path to log file"
+    )
+    log_level: str = Field(
+        default="INFO",
+        description="Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL)"
+    )
+
+    # Response Configuration
+    max_response_length: int = Field(
+        default=1000,
+        ge=100,
+        description="Maximum length for bot responses"
+    )
+    enable_context: bool = Field(
+        default=True,
+        description="Enable conversation context storage"
+    )
+    context_memory_size: int = Field(
+        default=10,
+        ge=1,
+        le=100,
+        description="Number of messages to remember per user"
+    )
+
+    # Rate Limiting
+    rate_limit_enabled: bool = Field(
+        default=True,
+        description="Enable rate limiting"
+    )
+    rate_limit_messages: int = Field(
+        default=20,
+        ge=1,
+        description="Number of messages allowed per window"
+    )
+    rate_limit_window: int = Field(
+        default=60,
+        ge=1,
+        description="Time window for rate limiting (seconds)"
+    )
+
+    # Caching Configuration
+    cache_enabled: bool = Field(
+        default=False,
+        description="Enable response caching"
+    )
+    cache_ttl: int = Field(
+        default=3600,
+        ge=60,
+        description="Cache time-to-live (seconds)"
+    )
+    redis_url: Optional[str] = Field(
+        default=None,
+        description="Redis connection URL"
+    )
+    redis_disabled: bool = Field(
+        default=True,
+        description="Disable Redis even if available"
+    )
+
+    # Security Configuration
+    verify_twilio_signature: bool = Field(
+        default=False,
+        description="Verify Twilio webhook signatures"
+    )
+    # NOTE: These are reserved for future features (Twilio message sending)
+    twilio_account_sid: str = Field(
+        default="",
+        description="[FUTURE] Twilio account SID for sending messages"
+    )
+    twilio_auth_token: str = Field(
+        default="",
+        description="Twilio authentication token"
+    )
+    twilio_whatsapp_number: str = Field(
+        default="",
+        description="[FUTURE] Twilio WhatsApp number for sending messages"
+    )
+
+    # Server Configuration
+    port: int = Field(
+        default=5000,
+        ge=1024,
+        le=65535,
+        description="HTTP server port"
+    )
+    debug: bool = Field(
+        default=False,
+        description="Enable Flask debug mode"
+    )
+
+    class Config:
+        """Pydantic configuration."""
+
+        env_file = ".env"
+        env_file_encoding = "utf-8"
+        case_sensitive = False
+
+    def __init__(self, **data):
+        """Initialize settings and apply environment-based defaults."""
+        super().__init__(**data)
+
+        # Load environment-specific defaults if not explicitly set
+        if "environment" in os.environ:
+            env_config = EnvironmentConfig.get_config(self.environment)
+            for key, value in env_config.items():
+                if hasattr(self, key) and os.environ.get(key.upper()) is None:
+                    setattr(self, key, value)
+
+    @validator("environment", pre=True)
+    def validate_environment(cls, v):
+        """Validate and normalize environment value."""
+        if isinstance(v, Environment):
+            return v
+        if isinstance(v, str):
+            return Environment(v.lower())
+        return Environment.DEVELOPMENT
+
+
+# Backward compatibility: Create a Settings instance as before
 settings = Settings()
+

@@ -3,6 +3,8 @@
 # Core dependencies
 python-dotenv>=1.0.0
 groq>=0.4.0
+pydantic>=2.0.0
+pydantic-settings>=2.0.0
 
 # Web framework for webhook
 flask>=3.0.0
@@ -16,6 +18,7 @@ requests>=2.31.0
 
 # Logging and monitoring
 colorlog>=6.8.0
+structlog>=24.1.0
 
 # Optional: WhatsApp Web integration
 # whatsapp-web>=1.0.0  # Uncomment if using whatsapp-web.py
